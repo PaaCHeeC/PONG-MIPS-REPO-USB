@@ -3,7 +3,7 @@
 # CI-3815: ORGANIZACION DEL COMPUTADOR
 #
 # PROYECTO 2:  PONG (MIPS)
-# AUTORES:     Victor Hernandez (20-10349) y Angel Pacheco (20-10479)
+# AUTORES:     Victor Hernandez y Angel Pacheco
 # FECHA:       Diciembre 2025
 #
 # DESCRIPCION GENERAL:
@@ -15,7 +15,7 @@
 .data
     # CONFIGURACION Y CONSTANTES
     ANCHO:      .word 24			# Ancho total del buffer (23 chars + \n)
-    ALTO:       .word 8			# Altura total (filas 0-7)
+    ALTO:       .word 8			    # Altura total (filas 0-7)
     
     # VARIABLES DE ESTADO DEL JUEGO
     game_mode:  .word 0       		# 1=1P, 2=2P
@@ -28,7 +28,7 @@
     ball_state: .word 0
     
     # VECTORES DE FISICA Y POSICIONAMIENTO
-    ballX:      .word 1			# Posicion X inicial (Delante de P1)
+    ballX:      .word 1			    # Posicion X inicial (Delante de P1)
     ballY:      .word 3       		# Posicion Y inicial (Centro)
     balldX:     .word 1      		# Velocidad X (+1 derecha, -1 izquierda) 
     balldY:     .word -1      		# Velocidad Y (+1 abajo, -1 arriba)
@@ -37,12 +37,12 @@
     paddle2Y:   .word 3       		# Posicion Y paleta 2
     
     # VARIABLES DE CONTROL E IA
-    paddle2_dir:.word 0			# Direccion actual de la IA
+    paddle2_dir:.word 0			    # Direccion actual de la IA
     last_dir_p1:.word -1			# MEmoria de direccion P1 para saques
     last_dir_p2:.word -1			# Memoria de direccion P2 para saques
     
-    score1:     .word 0			# Puntaje del jugador 1
-    score2:     .word 0			# Puntaje del jugador 2
+    score1:     .word 0			    # Puntaje del jugador 1
+    score2:     .word 0			    # Puntaje del jugador 2
     last_time:  .word 0       		# Marca de tiempo para control de frames
 
     # BUFFER PARA VIDEO (LIENZO) Y MENSAJES
@@ -72,17 +72,17 @@
 # RUTINA PRINCIPAL
 main:
     # Semilla Random (Syscall 30 + 40)
-    li     $v0, 30			# Obtener tiempo
+    li     $v0, 30			        # Obtener tiempo
     syscall
-    move   $a1, $a0			# Mover tiempo a argumento semilla
-    li     $v0, 40			# Establecer velocidad
-    li     $a0, 0			# ID del generador
+    move   $a1, $a0			        # Mover tiempo a argumento semilla
+    li     $v0, 40			        # Establecer velocidad
+    li     $a0, 0			        # ID del generador
     syscall
     
     # Inicializar time
-    li     $v0, 30			# Obtener tiempo
+    li     $v0, 30			        # Obtener tiempo
     syscall
-    sw     $a0, last_time	# Guardar timepo inicial
+    sw     $a0, last_time	        # Guardar timepo inicial
 
     # Mostrar menu en MMIO
     la     $a0, menu_msg
@@ -90,10 +90,10 @@ main:
 
 # BUCLE DE MENU (ESPERAR ACTIVA DE TECLA)
 wait_menu:
-    jal    check_input			# Verificar teclado MMIO
+    jal    check_input			    # Verificar teclado MMIO
     beqz   $v0, wait_menu			# Si no hay tecla, repetir
     
-    subi   $t0, $v0, 48   		# Convertir ASCII a entero ('0'=48)
+    subi   $t0, $v0, 48   		    # Convertir ASCII a entero ('0'=48)
     
     # Validacion de rango (Solo 1 a 2)
     li     $t1, 1
@@ -115,7 +115,7 @@ wait_tick:
     syscall             
     
     lw     $t0, last_time			# Cargar ultima marca de tiempo
-    sub    $t1, $a0, $t0   	 	# Calcular delta
+    sub    $t1, $a0, $t0   	 	    # Calcular delta
     
     li     $t2, 200      			# Velocidad esperada   
     blt    $t1, $t2, wait_tick 		# Si delta < 200, seguir esperando
@@ -124,14 +124,14 @@ wait_tick:
 
     # LECTURA DE INPUTS
     # Incializadas en 0
-    li     $s1, 0  			# Accion P1
-    li     $s2, 0  			# Accion P2
+    li     $s1, 0  			        # Accion P1
+    li     $s2, 0  			        # Accion P2
 
 poll_loop:
     jal    check_input
     beqz   $v0, apply_inputs 		# Si no hay mas teclas en buffer, aplicar logica
     
-    move   $t0, $v0			# Mover tecla leida a temporal
+    move   $t0, $v0			        # Mover tecla leida a temporal
     
     # P1 Mapping
     beq    $t0, 119, set_p1_u		# 'w' Arriba
@@ -147,26 +147,26 @@ poll_loop:
     beq    $t0, 107, set_p2_d 		# 'k' Abajo
     beq    $t0, 109, set_p2_m 		# 'm' Saque
     
-    j      poll_loop 			# Seguir drenado de buffer
+    j      poll_loop 			    # Seguir drenado de buffer
 
 # Setters de Acciones (Optimizan saltos)
 set_p1_u: 
-    li     $s1, 1 			# P1 Arriba
+    li     $s1, 1 			        # P1 Arriba
     j      poll_loop
 set_p1_d: 
-    li     $s1, 2 			# P1 Abajo
+    li     $s1, 2 			        # P1 Abajo
     j      poll_loop
 set_p1_x:
-    li     $s1, 3			# P1 Saque
+    li     $s1, 3			        # P1 Saque
     j      poll_loop
 set_p2_u: 
-    li     $s2, 1 			# P2 Arriba
+    li     $s2, 1 			        # P2 Arriba
     j      poll_loop
 set_p2_d:
-    li     $s2, 2 			# P2 Abajo
+    li     $s2, 2 			        # P2 Abajo
     j      poll_loop
 set_p2_m:
-    li     $s2, 3 			# P2 Saque
+    li     $s2, 3 			        # P2 Saque
     j      poll_loop
 
 # APLICAR LOGICA DE MOVIMIENTO (PALETAS)
@@ -175,11 +175,11 @@ apply_inputs:
     beq    $s1, 1, p1_up
     beq    $s1, 2, p1_down
     beq    $s1, 3, p1_serve
-    j      check_p2_exec			# Si no hubo input P1, saltar a P2
+    j      check_p2_exec		    # Si no hubo input P1, saltar a P2
 
 p1_up:
     li     $t9, -1
-    sw     $t9, last_dir_p1		# Guardar ultima direccion (-1)
+    sw     $t9, last_dir_p1		    # Guardar ultima direccion (-1)
     lw     $t1, paddle1Y
     li     $t2, 1
     ble    $t1, $t2, check_p2_exec	# Limite superior
@@ -189,7 +189,7 @@ p1_up:
 
 p1_down:
     li     $t9, 1
-    sw     $t9, last_dir_p1		# Guardar ultima direccion (1)
+    sw     $t9, last_dir_p1		    # Guardar ultima direccion (1)
     lw     $t1, paddle1Y
     li     $t2, 6
     bge    $t1, $t2, check_p2_exec	# Limite inferior
@@ -201,13 +201,13 @@ p1_serve:
     lw     $t1, ball_state
     bnez   $t1, check_p2_exec		# Solo servir si ball_state == 0
     li     $t1, 1
-    sw     $t1, ball_state		# Estado en juego
+    sw     $t1, ball_state		    # Estado en juego
     li     $t1, 1
-    sw     $t1, balldX			# Direccion X derecha
+    sw     $t1, balldX			    # Direccion X derecha
     lw     $t2, last_dir_p1
-    sw     $t2, balldY			# Direccion Y segun movimiento previo
+    sw     $t2, balldY			    # Direccion Y segun movimiento previo
     bnez   $t2, check_p2_exec
-    li     $t2, -1			# Default Y arriba si estaba quieto
+    li     $t2, -1			        # Default Y arriba si estaba quieto
     sw     $t2, balldY
 
 # P2 Actions
@@ -260,10 +260,10 @@ end_input_proc:
     # LIMPIEZA VISUAL (Borrar rastro anterior)
     lw     $a0, ballX
     lw     $a1, ballY
-    li     $a2, 32         		# Espacio ' ' 
+    li     $a2, 32         		    # Espacio ' ' 
     li     $t5, 11
     bne    $a0, $t5, do_clean
-    li     $a2, 124 			# Si esta en el medio, dibujar Red '|'
+    li     $a2, 124 			    # Si esta en el medio, dibujar Red '|'
 do_clean:
     jal    draw_pixel
     jal    clean_paddle_lanes		# Limpiar columnas de paletas
@@ -274,7 +274,7 @@ do_clean:
     # DIBUJADO DE NUEVO FRAME
     lw     $a0, ballX
     lw     $a1, ballY
-    li     $a2, 111 			# Caracter 'o'
+    li     $a2, 111 			    # Caracter 'o'
     jal    draw_pixel
     
     # Paletas
@@ -293,11 +293,11 @@ draw_obs:
 skip_obs_draw:
     # OUTPUT MMIO
     la     $a0, clear_msg   
-    jal    print_mmio     		# Limpiar terminal 
+    jal    print_mmio     		    # Limpiar terminal 
     la     $a0, pantalla    
-    jal    print_mmio      		# Dibujar frame actual
+    jal    print_mmio      		    # Dibujar frame actual
 
-    j      game_loop			# Repetir bucle
+    j      game_loop			    # Repetir bucle
 
 # SUBRUTINAS
 # DIBUJAR OBSTACULOS (NIVEL 2)
@@ -307,12 +307,12 @@ draw_obstacles:
     
     li     $a0, 11
     li     $a1, 2
-    li     $a2, 88  			# Caracter 'X'
+    li     $a2, 88  			    # Caracter 'X'
     jal    draw_pixel
     
     li     $a0, 11
     li     $a1, 5
-    li     $a2, 88  			# Caracter 'X'
+    li     $a2, 88  			    # Caracter 'X'
     jal    draw_pixel
     
     lw     $ra, 0($sp)
@@ -327,11 +327,11 @@ physics_move:
     
     lw     $t0, ballX
     lw     $t1, balldX
-    add    $t8, $t0, $t1   		# Futuro X
+    add    $t8, $t0, $t1   		    # Futuro X
     
     lw     $t2, ballY
     lw     $t3, balldY
-    add    $t9, $t2, $t3   		# Futuro Y
+    add    $t9, $t2, $t3   		    # Futuro Y
     
     # CHEQUEO DE OBSTACULOS (Nivel 2) 
     lw     $t4, current_lvl
@@ -376,22 +376,22 @@ skip_obs_phys:
 
 hit_ceil:
     li     $t3, 1
-    sw     $t3, balldY			# Invertir Y hacia abajo
+    sw     $t3, balldY			    # Invertir Y hacia abajo
     li     $t9, 1           		# Clamp posicion
     j      check_sides	
 
 hit_floor:
     li     $t3, -1
-    sw     $t3, balldY			# Invertir Y hacia abajo
+    sw     $t3, balldY			    # Invertir Y hacia abajo
     li     $t9, 6           	 	# Clamp posicion
     j      check_sides
 
 check_sides:
     # DETECCION DE GOL 0 PALETA 
     li     $t4, 0
-    ble    $t8, $t4, try_hit_p1 		# Si FuturoX <= 0
+    ble    $t8, $t4, try_hit_p1 	# Si FuturoX <= 0
     li     $t4, 22
-    bge    $t8, $t4, try_hit_p2 		# Si FuturoX >= 22
+    bge    $t8, $t4, try_hit_p2 	# Si FuturoX >= 22
     
     # Si no hay colision lateral, avanzar libremente
     sw     $t8, ballX
@@ -404,9 +404,9 @@ try_hit_p1:
     
     # Contacto exitoso de P1
     li     $t1, 1
-    sw     $t1, balldX			# Rebotar hacia derecha
+    sw     $t1, balldX			    # Rebotar hacia derecha
     li     $t0, 1
-    sw     $t0, ballX			# Posicionar en X=1
+    sw     $t0, ballX			    # Posicionar en X=1
     j      end_phys
 
 try_hit_p2:
@@ -415,9 +415,9 @@ try_hit_p2:
     
     # Contacto exitoso de P2
     li     $t1, -1
-    sw     $t1, balldX			# Rebotar hacia izquierda
+    sw     $t1, balldX			    # Rebotar hacia izquierda
     li     $t0, 21          
-    sw     $t0, ballX			# Posicionar en X=21
+    sw     $t0, ballX			    # Posicionar en X=21
     j      end_phys
 
 score_p1_evt: 
@@ -432,13 +432,13 @@ score_p1_evt:
     beq    $t4, $t5, check_level_win
     
     # Reset para saque de P2
-    li     $t0, 2			# Estado de bola = P2
+    li     $t0, 2			        # Estado de bola = P2
     sw     $t0, ball_state
     lw     $t1, paddle2Y
     sw     $t1, ballY
     li     $t2, 21          		# Bola pegada a P2
     sw     $t2, ballX
-    li     $t0, -1			# Reset direccion P2
+    li     $t0, -1			        # Reset direccion P2
     sw     $t0, last_dir_p2
     j      end_phys
 
@@ -453,11 +453,11 @@ score_p2_evt:
     beq    $t4, $t5, check_level_win
     
     # Reset para saque de P1
-    li     $t0, 0			# Estado de bola = P1
+    li     $t0, 0			        # Estado de bola = P1
     sw     $t0, ball_state
     lw     $t1, paddle1Y
     sw     $t1, ballY
-    li     $t2, 1          		# Bola pegada a P1
+    li     $t2, 1          		    # Bola pegada a P1
     sw     $t2, ballX
     j      end_phys
 
@@ -477,8 +477,8 @@ check_level_win:
     jal    print_mmio
        
     li     $t0, 2
-    sw     $t0, current_lvl		# Set Nivel 2
-    li     $t0, 0			# Reset Scores
+    sw     $t0, current_lvl		    # Set Nivel 2
+    li     $t0, 0			        # Reset Scores
     sw     $t0, score1
     sw     $t0, score2
     jal    update_score_display
@@ -532,21 +532,21 @@ update_game_logic:
     li     $t1, 2
     beq    $t0, $t1, stick_p2		# Si estado 2, pegar a P2
     
-    jal    physics_move			# Si estado 1, mover bola
+    jal    physics_move			    # Si estado 1, mover bola
     j      end_lg
     
 stick_p1:
     lw     $t1, paddle1Y
-    sw     $t1, ballY			# Y bola = Y paleta1
+    sw     $t1, ballY			    # Y bola = Y paleta1
     li     $t2, 1
-    sw     $t2, ballX			# X bola = 1
+    sw     $t2, ballX			    # X bola = 1
     j      end_lg
     
 stick_p2:
     lw     $t1, paddle2Y
-    sw     $t1, ballY			# Y bola = Y paleta2
+    sw     $t1, ballY			    # Y bola = Y paleta2
     li     $t2, 21
-    sw     $t2, ballX			# X bola = 21
+    sw     $t2, ballX			    # X bola = 21
     j      end_lg
     
 end_lg:
@@ -615,15 +615,15 @@ ap_ia:
     # Logica de Auto-Saque
     lw     $t9, ball_state
     li     $t8, 2
-    bne    $t9, $t8, fin_ia		# Si bola no es mia, fin
+    bne    $t9, $t8, fin_ia		    # Si bola no es mia, fin
     
     li     $t9, 1
-    sw     $t9, ball_state		# Sacar bola
+    sw     $t9, ball_state		    # Sacar bola
     li     $t9, -1
-    sw     $t9, balldX			# Hacia la izquierda
+    sw     $t9, balldX			    # Hacia la izquierda
     lw     $t9, paddle2_dir
     bnez   $t9, set_ia_s
-    li     $t9, 1 			# Default saque
+    li     $t9, 1 			        # Default saque
 set_ia_s:
     sw     $t9, balldY
 fin_ia:
@@ -634,17 +634,17 @@ fin_ia:
 # PRINT MMIO (IMPRESION EN SIMULADOR) 
 print_mmio:
     move   $t0, $a0
-    li     $t1, 0xffff0008		# Direccion Control Transmitter
-    li     $t2, 0xffff000c		# Direccion Data Transmitter
+    li     $t1, 0xffff0008		    # Direccion Control Transmitter
+    li     $t2, 0xffff000c		    # Direccion Data Transmitter
 pl_loop:
-    lb     $t3, 0($t0)			# Cargar char del string
-    beqz   $t3, pl_end			# Fin de string (null terminator)
+    lb     $t3, 0($t0)			    # Cargar char del string
+    beqz   $t3, pl_end			    # Fin de string (null terminator)
 wait_disp:
-    lw     $t4, 0($t1)			# Leer control
-    andi   $t4, $t4, 1			# Verificar bit "Ready"
+    lw     $t4, 0($t1)			    # Leer control
+    andi   $t4, $t4, 1			    # Verificar bit "Ready"
     beqz   $t4, wait_disp			# Esperar si no esta listo
-    sb     $t3, 0($t2)			# Escribir char en data
-    addi   $t0, $t0, 1			# Siguiente char
+    sb     $t3, 0($t2)			    # Escribir char en data
+    addi   $t0, $t0, 1			    # Siguiente char
     j      pl_loop
 pl_end:
     jr     $ra
@@ -670,24 +670,24 @@ draw_pixel:
     li     $t4, 35
     beq    $t3, $t4, abt_drw
     
-    sb     $a2, 0($t0)			# Escribir pixel
+    sb     $a2, 0($t0)			    # Escribir pixel
 abt_drw:
     jr     $ra
 
 # LIMPIAR COLUMNAS DE PALETAS 
 clean_paddle_lanes:
     la     $t0, pantalla
-    li     $t1, 1			# Y iterador
-    li     $t2, 7			# Limite Y
+    li     $t1, 1			        # Y iterador
+    li     $t2, 7			        # Limite Y
 cl_loop:
     bge    $t1, $t2, cl_end
     mul    $t3, $t1, 24
     add    $t3, $t3, $t0
-    li     $t4, 32			# Espacio en blanco ' '
+    li     $t4, 32			        # Espacio en blanco ' '
     
     # Limpiar columna 0 (P1)
     lb     $t5, 0($t3)
-    li     $t6, 35			# '#'
+    li     $t6, 35			        # '#'
     beq    $t5, $t6, sk0			# No borrar paredes
     sb     $t4, 0($t3)
 sk0:
@@ -704,9 +704,9 @@ cl_end:
 # DIBUJAR PALETAS ('H')  
 draw_paddle1: 
     move   $t8, $a0
-    li     $a2, 72			# 'H'
+    li     $a2, 72			        # 'H'
     move   $a1, $t8
-    li     $a0, 0			# Columna 0
+    li     $a0, 0			        # Columna 0
     addi   $sp, $sp, -4
     sw     $ra, 0($sp)
     jal    draw_pixel
@@ -716,9 +716,9 @@ draw_paddle1:
 
 draw_paddle2:
     move   $t8, $a0
-    li     $a2, 72 			# 'H'
+    li     $a2, 72 			        # 'H'
     move   $a1, $t8
-    li     $a0, 22			# Columna 22
+    li     $a0, 22			        # Columna 22
     addi   $sp, $sp, -4
     sw     $ra, 0($sp)
     jal    draw_pixel
@@ -740,7 +740,7 @@ check_input:
     andi   $t1, $t1, 1			# Check Ready Bit
     beqz   $t1, no_key
     lw     $v0, 4($t0)			# Leer Data Receiver
-    jr     $ra				# Mascara para limpiar basura
+    jr     $ra				    # Mascara para limpiar basura
 no_key:
     li     $v0, 0
     jr     $ra
@@ -757,5 +757,5 @@ update_score_display:
     jr     $ra
 
 game_over:
-    li     $v0, 10			# Salida
+    li     $v0, 10			    # Salida
     syscall
